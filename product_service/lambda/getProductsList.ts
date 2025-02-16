@@ -1,28 +1,27 @@
-import { APIGatewayProxyHandler } from "aws-lambda";
-import * as fs from "fs";
-import * as path from "path";
-
 export const handler: APIGatewayProxyHandler = async () => {
     try {
-        // JSON faylni o‘qish
-        const productsFile = path.resolve(__dirname, "mock-products.json");
-        const productsData = fs.readFileSync(productsFile, "utf8");
-        const products = JSON.parse(productsData);
+        const products = [
+            { id: "1", name: "Laptop", price: 1200 },
+            { id: "2", name: "Phone", price: 800 },
+            { id: "3", name: "Tablet", price: 500 }
+        ];
 
         return {
             statusCode: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",  // ✅ CORS ni yoqish
+                "Access-Control-Allow-Methods": "GET, OPTIONS",
+            },
             body: JSON.stringify(products)
         };
-    } catch (error: any) {  // ✅ Xatolikni TypeScript'ga to‘g‘ri ko‘rsatish
-        console.error("Lambda error:", error);
-
+    } catch (error) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ 
-                message: "Internal server error", 
-                error: error.message || "Unknown error"
-            })
+            headers: {
+                "Access-Control-Allow-Origin": "*",  // ✅ CORS ni yoqish
+            },
+            body: JSON.stringify({ message: "Internal server error" })
         };
     }
 };
