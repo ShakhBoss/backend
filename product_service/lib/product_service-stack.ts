@@ -1,16 +1,25 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+
+import * as cdk from "aws-cdk-lib";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as apigateway from "aws-cdk-lib/aws-apigateway";
+import { Construct } from "constructs";
 
 export class ProductServiceStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+        super(scope, id, props);
 
-    // The code that defines your stack goes here
+        // Lambda funksiyasini yaratish
+        const getProductsListLambda = new lambda.Function(this, "GetProductsListHandler", {
+            runtime: lambda.Runtime.NODEJS_18_X,  // Node.js versiyasini tanlash
+            code: lambda.Code.fromAsset("lambda"),  // lambda katalogidan kod yuklash
+            handler: "getProductsList.handler"
+        });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'ProductServiceQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
-  }
+        // API Gateway yaratish
+        const api = new apigateway.RestApi(this, "ProductServiceAPI");
+
+        // /products endpointini yaratish va Lambda bilan bog‘lash
+        const productsResource = api.root.addResource("products");
+        productsResource.addMethod("GET", new apigateway.LambdaIntegration(getProductsListLambda));
+    }
 }
